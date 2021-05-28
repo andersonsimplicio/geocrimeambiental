@@ -1,0 +1,52 @@
+{% extends 'geo/home.html' %}
+{% load static %}
+
+{% block search %}
+<section id="form_search">
+    <div class="container_form">
+        <div class="box_wallpaper">
+            <img src="{% static 'img/bgc_1.jpg' %}" alt="">
+        </div>
+        <div class="box_wallpaper_before">
+            <div class="formulario">
+                <form action="{% url 'geo:mapa' %}" id="form_end" method="GET">
+                  <div class="input_box w100">
+                    <label for="nome">Nome </label>
+                    <input type="text" id="nome">
+                  </div>
+                  <div class="container_input">
+                    <div class="input_box w50">
+                        <label for="municipio">Municipio </label>
+                        <input type="text" id="municipio">
+                    </div>
+                    <div class="input_box w50">
+                      <label for="codigo">Codigo </label>
+                      <input type="text" id="codigo">
+                    </div>
+                  </div>
+                  <div class="container_input">
+                    <div class="input_box w50">
+                      <label for="long">Longitude</label>
+                      <input type="text" id="long">
+                    </div>
+                    <div class="input_box w50">
+                       <label for="lat">Latitude </label>
+                      <input type="text" id="lat">
+                    </div>
+                  </div>
+                     <div class="input_box w100">
+                    <label for="area">Área </label>
+                    <input type="text" id="area">
+                  </div>
+                  <div class="submit">
+                    <input type="submit" value=" Enviar">
+                  </div>
+                </form>
+              </div>
+        </div>
+    </div>
+</section>
+ {% endblock %}
+
+ {% block section %}
+ {% endblock %}

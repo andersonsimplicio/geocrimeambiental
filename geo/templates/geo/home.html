@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block main %}
+{% block search %}
+<section id="form_search">
+  <div class="container_form">
+      <div class="box_wallpaper">
+          <img src="{% static 'img/bgc_1.jpg' %}" alt="">
+      </div>
+      <div class="box_wallpaper_before">
+          <div class="form">
+              <form action="" method="POST">
+                {% csrf_token %}
+                  <div class="form_container active">
+                      <div>
+                          <label for="">Busque o Assunto</label>
+                      <div class="div_input">
+                          <input type="text" name="" id="search_id">
+                          <button type="button" id="buscar" data-url="{% url 'geo:search_assunto' %}">
+                              <i class="fas fa-search"></i>
+                          </button>
+                      </div>
+                    </div>
+                  </div>
+              </form>
+          </div>
+      </div>
+  </div>
+</section>
+{% endblock %}
+{% block section %}
+<section id="tabela_assuntos">
+  <div class="container">
+      <table class="table table-striped table-subjects">
+          <thead>
+              <tr>
+                  <th scope="col">Cód.</th>
+                  <th scope="col">Assunto</th>
+              </tr>
+          </thead>
+          <tbody class="my-auto tbody-subjects" id="tbody_subjects">
+          </tbody>
+      </table>
+  </div>
+</section>
+{% endblock %}
+{% endblock %}
