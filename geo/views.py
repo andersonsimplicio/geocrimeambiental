@@ -272,9 +272,9 @@ class Mapa(TemplateView):
         
         florestas.geometry = convert_3D_2D(florestas.geometry)
         mask = []  
-        	
-        latitude=-14.32434987
-        longitude=-56.02951819
+        	    
+        latitude=-15.447176263146
+        longitude=-53.160602775411 
        
         ponto =Point(longitude,latitude) 
         mask_floresta = filter(florestas['geometry'],ponto)   
