@@ -9,7 +9,8 @@
         </div>
         <div class="box_wallpaper_before">
             <div class="formulario">
-                <form action="{% url 'geo:mapa' %}" id="form_end" method="GET">
+                <form  id="form_end" method="POST" action="{% url 'geo:geobrain' %}" enctype="multipart/form-data">
+                  {% csrf_token %} 
                   <div class="input_box w100">
                     <label for="nome">Nome </label>
                     <input type="text" id="nome">
@@ -34,15 +35,18 @@
                       <input type="text" id="lat">
                     </div>
                   </div>
-                     <div class="input_box w100">
-                    <label for="area">Área </label>
-                    <input type="text" id="area">
+                  <div class="custom-file" id="customFile" lang="es">
+                    <input type="file" class="custom-file-input" id="exampleInputFile" name="file" aria-describedby="fileHelp">
+                    <label class="custom-file-label" for="exampleInputFile">
+                       Petição Incial
+                    </label>
                   </div>
                   <div class="submit">
                     <input type="submit" value=" Enviar">
                   </div>
                 </form>
-              </div>
+            
+            </div>
         </div>
     </div>
 </section>

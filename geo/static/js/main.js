@@ -40,7 +40,6 @@ function search_subjects(){
     let assunto = document.querySelector('#search_id').value;
     
     let path = bt.dataset.url;
-
     $.ajax(
         {
             type:'POST',
@@ -60,13 +59,10 @@ function search_subjects(){
                            add_table(assunto);
                        })
 
-                    }else{
-                        console.log("Não temos um array")
                     }
-                    // d = JSON.parse(JSON.stringify(d['assuntos']));
-                    // returnData(d);
                 }
     });
 }
 const btn =document.querySelector("#buscar"); 
 btn.addEventListener('click',search_subjects);
+

@@ -1,17 +1,17 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic.base import TemplateView
 from django.http import JsonResponse
+from numpy.lib.twodim_base import mask_indices
+from numpy.testing._private.utils import break_cycles
 from .models import Assuntos
 from shapely.geometry import Polygon, MultiPolygon, Point
-from geopandas import GeoSeries
+import random
+from datetime import date
 import geopandas as gp
+import pandas as pd
 import os
 import folium
-import pandas as pd
-import json
-
-
-#
+pd.set_option('display.max_columns', None)
 def add_categorical_legend(folium_map, title, colors, labels):
     '''
      Transforma um poligono z(3D) em 2D
@@ -148,7 +148,9 @@ class IndexView(TemplateView):
 
 
 style1 = {'fillColor': 'ff1919', 'color': '#ff0000'}
-style2 = {'fillColor': '#DAA520', 'color': '#006400'}
+style2 = {'fillColor': 'green', 'color': 'green'}
+style3 = {'fillColor': '#9c5010', 'color': 'orange'}
+style4 = {'fillColor': '#FFFF00', 'color': '#483D8B'}
 
 def filter(geometry,ponto):
     for poly in geometry:
@@ -163,8 +165,7 @@ def filter(geometry,ponto):
                         return mask 
     return None
 
-
-    
+   
 def get_arvore(no):
     assunto = {}
     assunto['codigo'] = no.codigo
@@ -251,34 +252,66 @@ class DanoAmbiental(TemplateView):
         context = super().get_context_data(**kwargs)
         return context
 
-
 class Mapa(TemplateView):
     template_name = "geo/mapa.html"
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        florestas = gp.read_file('data/shp/MT.shp')
+        florestas = gp.read_file('data/Florestas/MT_floresta_SireneJud.shp')
         municipios = gp.read_file('data/municipios/MT_Municipios_2020.shp')   
         sigef = gp.read_file('data/sigef/Sigef Brasil_MT.shp')
-        ponto =Point(-56.33195815,-14.57322648)  
-        florestas.geometry = convert_3D_2D(florestas.geometry)
-        mask = []
+        area_imovel = gp.read_file('data/area/AREA_IMOVEL.shp')
+        terra_indigena = gp.read_file('data/terra_indigena/ti_sirgas.shp')
+        # print('Imoveis:')
+        # print(area_imovel.columns)
+        # print('Terra Indigena:')
+        # print(terra_indigena.columns) 
+        # print('Sigef:')
+        # print(sigef)
+        # print('Florestas:')
+        # print(florestas)
         
+        florestas.geometry = convert_3D_2D(florestas.geometry)
+        mask = []  
+        	
+        latitude=-14.32434987
+        longitude=-56.02951819
+       
+        ponto =Point(longitude,latitude) 
         mask_floresta = filter(florestas['geometry'],ponto)   
+        mask_floresta = filter(florestas['geometry'],ponto) 
+              
         if mask_floresta is not None:   
             print('Floresta')          
             geo_floresta =florestas[florestas['geometry']==mask_floresta]                            
             print(geo_floresta)
+        
+                
         mask_cidade = filter(municipios['geometry'],ponto)
         
         if mask_cidade is not None:
             print('Cidade')
             geo_cidade = municipios[municipios['geometry']==mask_cidade]                  
             print(geo_cidade)
+            for geo in geo_cidade:
+                print(type(geo))
+                break
+        
+        mask_area_imovel = filter(area_imovel['geometry'],ponto)
+        if mask_area_imovel is not None:
+            print('Area Imovel')
+            geo_area_imovel = area_imovel[area_imovel['geometry']==mask_area_imovel]                  
+            print(geo_area_imovel['COD_IMOVEL'].values[0])
+        
+        mask_indigena = filter(terra_indigena['geometry'],ponto)
+        
+        if mask_indigena is not None:
+            geo_indigena = terra_indigena[terra_indigena['geometry']==mask_indigena]
+            print(geo_indigena)
+            
             
         mask_sigef = filter(sigef['geometry'],ponto)  
-         
-        if mask_sigef is not None:
+           
+        if mask_sigef:
             print('Sigef:')
             geo_sigef = sigef[sigef['geometry']==mask_sigef]                  
             print(geo_sigef['nome_area']) 
@@ -291,19 +324,74 @@ class Mapa(TemplateView):
         if mask_floresta is not None:    
             folium.GeoJson(data=geo_floresta,style_function=lambda x:style2).add_to(m)
         
-        folium.Marker([-14.57322648,-56.33195815],icon=folium.Icon(color='red', icon='tree',prefix='fa'),popup="Dano Ambiental").add_to(m)          
+        folium.Marker([latitude,longitude],icon=folium.Icon(color='red', icon='tree',prefix='fa'),popup="Dano Ambiental").add_to(m)          
         if mask_cidade is not None:
             folium.GeoJson(data=geo_cidade["geometry"]).add_to(m) 
         
         if mask_sigef is not None:
             folium.GeoJson(data=geo_sigef["geometry"],style_function=lambda x:style1).add_to(m) 
+        
+        if mask_area_imovel is not None:
+            folium.GeoJson(data=geo_area_imovel["geometry"],style_function=lambda x:style3).add_to(m)
+        
+        if mask_indigena is not None:
+            folium.GeoJson(data=geo_indigena["geometry"],style_function=lambda x:style4).add_to(m) 
             
-        # cidade = str(geo_cidade['NM_MUN'].astype(str))    
-        # forest = str(geo_floresta['nome'].astype(str))
-        # m = add_categorical_legend(m, 'Legenda',
-        #                      colors = ['green','blue'],
-        #                    labels = ['TERRA INDIGENA NAMBIKWARA','Comodoro'])
+        label =[]  
+        cores =[]  
+        
+        if mask_indigena is not None:
+            tribo = str(geo_indigena['terrai_nom'].values[0])  
+            cores.append('#FFFF00')
+            label.append("TI "+tribo)
+        
+        if mask_cidade is not None:
+            cidade = str(geo_cidade['NM_MUN'].values[0])  
+            cores.append('blue')
+            label.append("Cidade "+cidade)
+        
+        if mask_floresta is not None:   
+            forest = str(geo_floresta['nome'].values[0])
+            cores.append('green')
+            label.append("Floresta: "+forest)
+            cores.append('#2F4F4F')
+            label.append("SireneJud: "+geo_floresta['SireneJud'].values[0])
+            
+            
+        if mask_area_imovel is not None:
+            Car = str(geo_area_imovel['COD_IMOVEL'].values[0])
+            cores.append('orange')
+            label.append("Car: "+Car)
+            
+        if mask_sigef is not None:
+            sigef = str(geo_sigef['codigo_imo'].values[0])
+            cores.append('red')
+            label.append("SIGEF: "+sigef)
+            
+        m = add_categorical_legend(m, 'Legenda',
+                             colors = cores,
+                           labels = label)
         
         mapa = m._repr_html_()  
         context['mapa']=mapa
         return context
+
+
+def gerarCodigoProcesso():
+    data_atual = date.today()
+    numero=""
+    for i in range(7):
+        numero+=str(random.randrange(9))
+        
+    for i in range(2):
+        numero+=str(random.randrange(9))
+    numero+=data_atual.strftime('%Y')
+    return numero+str(random.randrange(9))+"08"+"0029"
+
+    
+def geobrain(request):
+    if request.method=="POST":
+        print(request.POST)
+        print(request.FILES)
+        
+    return redirect('geo:dano_ambiental')
