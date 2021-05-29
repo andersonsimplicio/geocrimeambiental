@@ -272,9 +272,9 @@ class Mapa(TemplateView):
         
         florestas.geometry = convert_3D_2D(florestas.geometry)
         mask = []  
-        	    
-        latitude=-15.447176263146
-        longitude=-53.160602775411 
+           
+        latitude=-14.57322648
+        longitude=-56.33195815
        
         ponto =Point(longitude,latitude) 
         mask_floresta = filter(florestas['geometry'],ponto)   
@@ -386,7 +386,7 @@ def gerarCodigoProcesso():
     for i in range(2):
         numero+=str(random.randrange(9))
     numero+=data_atual.strftime('%Y')
-    return numero+str(random.randrange(9))+"08"+"0029"
+    return numero+str(random.randrange(9))+"08"+"3604"
 
     
 def geobrain(request):
