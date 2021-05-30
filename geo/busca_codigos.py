@@ -34,27 +34,22 @@ arquivos = lista_arquivos(pasta)
 # gerar o dataframe com os códigos encontratos
 # param @arquivo -> diretório dos arquivos
 
-def busca_sigef(texto,numero_processo) :
+def busca_sigef(texto) :
 
   data = {}
 
-  df = pd.DataFrame (columns = ['Numero do processo','SIGEF','CAR'])
-  # df = pd.read_csv('data/resultados.csv',sep=',')
+  df = pd.DataFrame (columns = ['SIGEF','CAR'])
   
-  sigef = re.findall(r'\b\d{13}\b', texto)            
-  car = re.findall("[A-Z]{2}-\d{7}-[A-Z0-9]{32}",texto)
+  sigef = re.findall(r'\b\d{13}\b', texto)
+  car = re.findall("[A-Z]{2}-\d{7}-[A-Z0-9]{32}", texto)
+  if sigef is None:
+        sigef=""
+  if car is None:
+        car=""
   
-  if car or sigef:  
-    data = {
-          'Numero do processo' : numero_processo,
-          'SIGEF':  sigef,
-          'CAR': car
-        }
-    df = df.append(data, ignore_index=True)
-    return df
-  else:
-      return None
-
+  data = {'SIGEF':sigef,'CAR':car}
+  return data
+  
 # exporta para CSV
 #from google.colab import files
 #df_codes.to_excel('codes.xlsx') 

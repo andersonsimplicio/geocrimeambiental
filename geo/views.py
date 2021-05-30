@@ -271,12 +271,19 @@ class Mapa(TemplateView):
         m = folium.Map(location=[-15.5989, -56.0949 ],width=735, height=437, zoom_start=5)
         proc =None
         try:
-           proc =get_object_or_404(Processo,numero=_numero)
+            proc =get_object_or_404(Processo,numero=_numero)
+            texto = read_pdf_to_txt(proc.arquivo.url,proc.arquivo)           
+            data = busca_sigef(texto=texto)   
+            cod_sigef_pdf = ""
+            sicar_pdf=""
+            if data:
+                cod_sigef_pdf = data['SIGEF']
+                sicar_pdf=data['CAR']
         except Exception as e:
             print(e)
         historico =""
         florestas = gp.read_file('data/Florestas/MT_floresta_SireneJud.shp')
-        print(florestas)
+    
         municipios = gp.read_file('data/municipios/MT_Municipios_2020.shp')   
         sigef = gp.read_file('data/sigef/Sigef_Brasil_MT.shp')
         area_imovel = gp.read_file('data/area/AREA_IMOVEL.shp')
@@ -315,6 +322,13 @@ class Mapa(TemplateView):
                print('Aqui')
         else:
             sgf = proc.cod_sigef
+            print('sgf {}'.format(sgf))
+            if sgf=="" or sgf is None:
+                try:
+                    sgf=str(cod_sigef_pdf[0])
+                except IndexError:
+                    pass
+                
             sigef = sigef[sigef['municipio_']==sgf]
             if is_empty(sigef):
                 ponto = sigef.centroid
@@ -330,9 +344,8 @@ class Mapa(TemplateView):
                 mask_app_alto =filter(app_alto['geometry'],ponto)
 
             sirene = proc.sirenejud
-            print(sirene)
+            
             floresta = florestas[florestas['SireneJud']==sirene]
-            print(floresta)
             if is_empty(floresta):
                 ponto = floresta.centroid
                 longitude=ponto.x
@@ -362,7 +375,14 @@ class Mapa(TemplateView):
                 mask_app_alto =filter(app_alto['geometry'],ponto)
         
             car = proc.sicar
-            rural =  area_imovel[area_imovel['COD_IMOVEL']==car]
+            print(print('car {}'.format(car)))
+            if car=="" or car is None:
+                try:
+                    car=str(sicar_pdf[0])
+                except IndexError:
+                    pass                   
+            
+            rural =area_imovel[area_imovel['COD_IMOVEL']==car]
             if is_empty(rural):
                 ponto = rural.centroid
                 longitude=ponto.x
@@ -501,14 +521,8 @@ def geobrain(request):
         p = Processo.objects.create(numero = _numero)
         try:
             if request.FILES['file']:
-               
-                arquivo = request.FILES['file']
-                texto = read_pdf_to_txt(p.arquivo.url,arquivo.name)           
-                df = busca_sigef(texto=texto,numero_processo=_numero)
+                print(request.FILES['file'])
                 p.arquivo = request.FILES['file']
-                if df is not None:
-                    p.cod_sigef = df['sigef']
-                    p.sicar=df['car']
             else:
                 p = Processo.objects.create(numero = _numero) 
         except Exception as e:

@@ -130,3 +130,5 @@ dmypy.json
 .vscode
 data/
 db.sqlite3
+conf/
+log/
