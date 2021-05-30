@@ -1,0 +1,25 @@
+{% extends 'geo/dano.html' %}
+{% load static %}
+
+
+{% block main  %}
+ 
+  <div class="container">
+    <div class="row">
+       <div  class="col-md-8 mapa">
+            {{ mapa | safe }}  
+       </div>
+       <div  class="col-md-4 mapa">
+        <div class="form-group" id="historico">
+          <label for="exampleTextarea" class="form-label"><h3>Histórico da Região</h3></label>
+          {% if historico %}
+            <textarea class="form-control"  id="exampleTextarea" rows="18" readonly>Processo:{{historico}}</textarea>
+          {% else %}
+          <textarea class="form-control"   id="exampleTextarea" rows="18" readonly></textarea>
+          {% endif %}
+        </div>
+        </div>
+   </div>
+  </div>
+  
+{% endblock %}
