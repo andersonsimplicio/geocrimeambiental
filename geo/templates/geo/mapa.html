@@ -13,7 +13,7 @@
         <div class="form-group" id="historico">
           <label for="exampleTextarea" class="form-label"><h3>Histórico da Região</h3></label>
           {% if historico %}
-            <textarea class="form-control"  id="exampleTextarea" rows="18" readonly>Processo:{{historico}}</textarea>
+            <textarea class="form-control"  id="exampleTextarea" rows="18" readonly>{{historico}}</textarea>
           {% else %}
           <textarea class="form-control"   id="exampleTextarea" rows="18" readonly></textarea>
           {% endif %}

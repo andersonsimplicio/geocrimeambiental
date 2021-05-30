@@ -41,7 +41,7 @@ def user_directory_path(instance, filename):
 
 class Processo(models.Model):
     data = models.DateTimeField(auto_now_add=True)
-    numero = models.CharField(max_length=255, blank=True)
+    numero = models.CharField(primary_key=True,max_length=255)
     cod_municipio_ibge = models.CharField(max_length=50,null=True,blank=True,default=None)
     arquivo = models.FileField(upload_to=user_directory_path,null=True,blank=True,default=None)
     cod_sigef = models.CharField(max_length=50,null=True,blank=True,default=None)
@@ -57,7 +57,7 @@ class Processo(models.Model):
         verbose_name_plural = 'Processos'
     
     def __str__(self):
-        return "{0} {1} {2}".format(self.numero)
+        return "{0} {1} {2}".format(self.numero,self.sirenejud,self.sicar)
     
 class DataJud(models.Model):
     numero = models.CharField(max_length=255, blank=True)
