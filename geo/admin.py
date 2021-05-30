@@ -1,8 +1,5 @@
 from django.contrib import admin
-from .models import Assuntos,Area,Processo
-
-
-
+from .models import Assuntos,Area,Processo,DataJud,Sicar
 
 class AsssuntosManager(admin.ModelAdmin):
     list_display=['codigo','cod_pai','descricao']
@@ -22,3 +19,5 @@ class ProcessoManager(admin.ModelAdmin):
 admin.site.register(Assuntos,AsssuntosManager)
 admin.site.register(Area,AreaManager)
 admin.site.register(Processo,ProcessoManager)
+admin.site.register(DataJud)
+admin.site.register(Sicar)

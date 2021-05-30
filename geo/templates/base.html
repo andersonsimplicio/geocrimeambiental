@@ -1,9 +1,8 @@
 {% load static %}
 <!doctype html>
 <html lang="pt-br">
-
     <head>
-        <title></title>
+        <title>MAPAJUD</title>
         <!-- Required meta tags -->
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -11,37 +10,37 @@
             integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w=="
             crossorigin="anonymous" referrerpolicy="no-referrer" />
         <!-- Bootstrap CSS -->
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-            integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        <link rel="stylesheet" href="{% static 'css/style.css' %}">
-       
+        <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+            integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
+            <link rel="stylesheet" href="{% static 'css/estilo.css' %}">
+            <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+            <style type="text/css">
+              body{
+                  background-image:url("{% static 'img/overlay.png' %}"), url("{% static 'img/bgc_1.jpg' %}");
+                  background-repeat: no-repeat;
+                  background-size: cover;
+                }
+            </style>
     </head>
 <body>
     <header>
-        <div class="center_nav">
-            <div class="container">
-
-            </div>
-        </div>
-        <nav class="nav_footer">
-            <div class="container">
-                <ul>
-
-                    <li>
-                        <a href="{% url 'geo:index' %}">Assuntos</a>
-                    </li>
-                    <!-- <li>
-                        <a href="{% url 'geo:mapa' %}">Maps</a>
-                    </li> -->
-                    <li>
-                        <a href="{% url 'geo:dano_ambiental' %}">Cadastro Crime Ambiental</a>
-                    </li>
-                </ul>
-            </div>
-
-        </nav>
+        
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="z-index: 20;">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="{% url 'geo:dano_ambiental' %}">
+          <img id="logo" src="{% static 'img/mapajud.png' %}" alt="">
+      </a> 
+      <div class="collapse navbar-collapse" id="navbarColor01">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'geo:dano_ambiental' %}">Home</a>
+          </li>    
+        </ul>
+      </div>
+    </div>
+  </nav>
     </header>
-    <main>
+    <main id="main">
         {% block main %}
 
         {% endblock %}
@@ -60,7 +59,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@2.2.1/src/js.cookie.min.js"></script>
     <script src="{% static 'js/main.js' %}" async></script>
-  
+         
 </body>
 
 </html>

@@ -76,7 +76,6 @@
     display: flex;
     justify-content: center;
     align-items:center;
-    
 }
 .form.active{
     justify-content: flex-start;

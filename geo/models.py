@@ -36,22 +36,44 @@ class Area(models.Model):
 
 def user_directory_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    return 'processos/{0}/{1}'.format(instance.processo,filename)
+    return 'processos/{0}/{1}'.format(instance.numero,filename)
 
 
 class Processo(models.Model):
     data = models.DateTimeField(auto_now_add=True)
     numero = models.CharField(max_length=255, blank=True)
-    cod_municipio_ibge = models.CharField(max_length=50,null=True,blank=True)
-    arquivo = models.FileField(upload_to=user_directory_path,null=True,blank=True)
-    cod_sigef = models.CharField(max_length=50,null=True,blank=True)
-    terrai_cod=models.CharField(max_length=50,null=True,blank=True)
-    cod_floresta = models.CharField(max_length=50,null=True,blank=True)
-    
+    cod_municipio_ibge = models.CharField(max_length=50,null=True,blank=True,default=None)
+    arquivo = models.FileField(upload_to=user_directory_path,null=True,blank=True,default=None)
+    cod_sigef = models.CharField(max_length=50,null=True,blank=True,default=None)
+    terrai_cod=models.CharField(max_length=50,null=True,blank=True,default=None)
+    cod_floresta = models.CharField(max_length=50,null=True,blank=True,default=None)
+    sicar = models.CharField(max_length=50,null=True,blank=True,default=None)
+    sirenejud=models.CharField(max_length=50,null=True,blank=True,default=None)
+    latitude=models.CharField(max_length=50,null=True,blank=True,default=None)
+    longitude=models.CharField(max_length=50,null=True,blank=True,default=None)
+        
     class Meta:
         verbose_name = 'Processo'
         verbose_name_plural = 'Processos'
     
     def __str__(self):
-        return "{0} {1} {2}".format(self.processo)
+        return "{0} {1} {2}".format(self.numero)
+    
+class DataJud(models.Model):
+    numero = models.CharField(max_length=255, blank=True)
+    sirenejud=models.CharField(max_length=50,null=True,blank=True,default=None)
+    latitude=models.CharField(max_length=50,null=True,blank=True,default=None)
+    longitude=models.CharField(max_length=50,null=True,blank=True,default=None)
+    cod_sigef = models.CharField(max_length=50,null=True,blank=True,default=None)
+    
+    def __str__(self):
+        return "{0} {1}".format(self.numero,self.sirenejud)
+    
+class Sicar(models.Model):
+    sicar = models.CharField(max_length=50,null=True,blank=True,default=None)
+    datajud = models.ForeignKey('DataJUD',on_delete=models.CASCADE)
+    
+    def __str__(self):
+       return "{0} {1}".format(self.sicar,self.datajud)
+    
     

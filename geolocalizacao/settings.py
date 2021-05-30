@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 import dj_database_url
-import os
+import os,sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -125,9 +125,16 @@ USE_TZ = True
 
 
 STATIC_URL = '/static/'
+
+PROJECT_ROOT = os.path.dirname(__file__)
+sys.path.insert(0,os.path.join(PROJECT_ROOT,'../app'))
+
+STATIC_ROOT = os.path.join(BASE_DIR,'static/')
+USE_L10N = False
+DATE_FORMAT = "Y-m-d"
+
 MEDIA_URL = '/media/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'

@@ -1,56 +1,62 @@
-{% extends 'geo/home.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
-{% block search %}
-<section id="form_search">
-    <div class="container_form">
-        <div class="box_wallpaper">
-            <img src="{% static 'img/bgc_1.jpg' %}" alt="">
-        </div>
-        <div class="box_wallpaper_before">
-            <div class="formulario">
-                <form  id="form_end" method="POST" action="{% url 'geo:geobrain' %}" enctype="multipart/form-data">
-                  {% csrf_token %} 
-                  <div class="input_box w100">
-                    <label for="nome">Nome </label>
-                    <input type="text" id="nome">
-                  </div>
-                  <div class="container_input">
-                    <div class="input_box w50">
-                        <label for="municipio">Municipio </label>
-                        <input type="text" id="municipio">
+{% block main %} 
+    <section id="form" class="border">
+        <legend><h2>MapaJUD</h2></legend>
+          <form method="POST" action="{% url 'geo:geobrain' %}" enctype="multipart/form-data">   
+            {% csrf_token %}     
+            <div class="row col-sm-12">       
+              <div class="form-group ">
+                <label class="col-form-label " for="inputDefault">Nome da Área</label>
+                <input type="text" name="area" class="form-control" placeholder="Nome da Área">
+              </div>
+            </div>  
+            <div class="row col-md-12">
+              <div class="col-md-6">
+                    <div class="form-group ">
+                        <label class="col-form-label" for="inputDefault">Latitude</label>
+                        <input type="text" name="latitude"  class="form-control" placeholder="ex.-15.65355">
                     </div>
-                    <div class="input_box w50">
-                      <label for="codigo">Codigo </label>
-                      <input type="text" id="codigo">
+              </div>
+                <div class="col-md-6">
+                    <div class="form-group ">
+                      <label class="col-form-label" for="inputDefault">Longitude</label>
+                      <input type="text" name="longitude" class="form-control" placeholder="ex.-56.96858">
+                    </div>  
+                </div> 
+             </div>   
+                <div class="row col-md-12">
+                  <div class="col-md-6 ">
+                        <div class="form-group ">
+                            <label class="col-form-label" for="inputDefault">Código SIGEF</label>
+                            <input type="text" name="sigef" class="form-control" placeholder="ex.Código SIGEF">
+                        </div>
                     </div>
+                    <div class="col-md-6">
+                        <div class="form-group ">
+                          <label class="col-form-label" for="inputDefault">Códgigo SIRENEJUD</label>
+                          <input type="text" name="sirenejud" class="form-control" placeholder="ex.Códgigo SIRENEJUD">
+                        </div>  
                   </div>
-                  <div class="container_input">
-                    <div class="input_box w50">
-                      <label for="long">Longitude</label>
-                      <input type="text" id="long">
+                </div>
+                <div class="row col-md-12">
+                  <div class="col-md-4 ">
+                        <div class="form-group ">
+                            <label class="col-form-label" for="inputDefault">Código Municipio IBGE</label>
+                            <input type="text" name="ibge" class="form-control" placeholder="ex.2525252">
+                        </div>
                     </div>
-                    <div class="input_box w50">
-                       <label for="lat">Latitude </label>
-                      <input type="text" id="lat">
-                    </div>
-                  </div>
-                  <div class="custom-file" id="customFile" lang="es">
-                    <input type="file" class="custom-file-input" id="exampleInputFile" name="file" aria-describedby="fileHelp">
-                    <label class="custom-file-label" for="exampleInputFile">
-                       Petição Incial
-                    </label>
-                  </div>
-                  <div class="submit">
-                    <input type="submit" value=" Enviar">
-                  </div>
-                </form>
-            
-            </div>
-        </div>
-    </div>
-</section>
- {% endblock %}
 
- {% block section %}
+                <div class="col-md-8">   
+                        <div class="form-group ">
+                          <label for="formFile" class="form-label mt-2">Petição Incial</label>
+                          <input class="form-control" type="file" name="file">
+                        </div>
+                </div>
+                <div class="col-md-12" style="align-items: center;"> 
+                <button type="submit" class="btn btn-primary mt-4">enviar</button>
+                </div>
+          </form>   
+     </section>    
  {% endblock %}

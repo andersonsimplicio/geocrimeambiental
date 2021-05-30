@@ -1,9 +1,9 @@
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect,get_list_or_404
 from django.views.generic.base import TemplateView
 from django.http import JsonResponse
 from numpy.lib.twodim_base import mask_indices
 from numpy.testing._private.utils import break_cycles
-from .models import Assuntos
+from .models import Assuntos,DataJud,Processo
 from shapely.geometry import Polygon, MultiPolygon, Point
 import random
 from datetime import date
@@ -11,6 +11,8 @@ import geopandas as gp
 import pandas as pd
 import os
 import folium
+from .convert_pdf import read_pdf_to_txt
+from .busca_codigos import busca_sigef
 pd.set_option('display.max_columns', None)
 def add_categorical_legend(folium_map, title, colors, labels):
     '''
@@ -256,118 +258,157 @@ class Mapa(TemplateView):
     template_name = "geo/mapa.html"
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        _numero = self.request.session['processo']
+        m = folium.Map(location=[-15.5989, -56.0949 ],width=735, height=437, zoom_start=5)
+        p =None
+        try:
+           p =get_object_or_404(Processo,numero=_numero)
+        except:
+            pass
+        historico =""
         florestas = gp.read_file('data/Florestas/MT_floresta_SireneJud.shp')
         municipios = gp.read_file('data/municipios/MT_Municipios_2020.shp')   
         sigef = gp.read_file('data/sigef/Sigef Brasil_MT.shp')
         area_imovel = gp.read_file('data/area/AREA_IMOVEL.shp')
         terra_indigena = gp.read_file('data/terra_indigena/ti_sirgas.shp')
-        # print('Imoveis:')
-        # print(area_imovel.columns)
-        # print('Terra Indigena:')
-        # print(terra_indigena.columns) 
-        # print('Sigef:')
-        # print(sigef)
-        # print('Florestas:')
-        # print(florestas)
+        app = gp.read_file('data/app/APP.shp')
+        app_alto = gp.read_file('data/app_altoParaguai/APP.shp')
         
         florestas.geometry = convert_3D_2D(florestas.geometry)
         mask = []  
-           
-        latitude=-14.57322648
-        longitude=-56.33195815
+        mask_floresta = None 
+        mask_cidade = None
+        mask_area_imovel = None
+        mask_indigena = None
+        mask_sigef = None
+        mask_app = None
+        mask_app_alto =None
+        geo_floresta = None
+        if p.latitude is not None and p.longitude is not None:	 
+            try:   
+                latitude=float(p.latitude)
+                longitude=float(p.longitude)
+                ponto =Point(longitude,latitude) 
+                mask_floresta = filter(florestas['geometry'],ponto) 
+                mask_cidade = filter(municipios['geometry'],ponto)
+                mask_area_imovel = filter(area_imovel['geometry'],ponto)
+                mask_indigena = filter(terra_indigena['geometry'],ponto)
+                mask_sigef = filter(sigef['geometry'],ponto) 
+                mask_app = filter(app['geometry'],ponto) 
+                mask_app_alto =filter(app_alto['geometry'],ponto)
+                folium.Marker([latitude,longitude],icon=folium.Icon(color='red', icon='tree',prefix='fa'),popup="Dano Ambiental").add_to(m)
+            except ValueError:
+                sirene = p.sirenejud
+                if sirene is not None:
+                    geo_floresta = florestas[florestas['SireneJud']==sirene] 
+                    print(geo_floresta)
+        else:
+            sirene = p.sirenejud
+            if sirene is not None:
+                geo_floresta = florestas[florestas['SireneJud']==sirene]
+                print(geo_floresta)
        
-        ponto =Point(longitude,latitude) 
-        mask_floresta = filter(florestas['geometry'],ponto)   
-        mask_floresta = filter(florestas['geometry'],ponto) 
-              
-        if mask_floresta is not None:   
-            print('Floresta')          
+        if mask_app is not None:   
+            print('App')          
+            geo_app =app[app['geometry']==mask_app]                            
+            print(geo_app)
+        
+        if mask_app_alto is not None:   
+            print('App_alto')          
+            geo_app_a =app_alto[app_alto['geometry']==mask_app_alto]                            
+            print(geo_app_a)
+        
+        if mask_floresta is not None:     
             geo_floresta =florestas[florestas['geometry']==mask_floresta]                            
-            print(geo_floresta)
-        
-                
-        mask_cidade = filter(municipios['geometry'],ponto)
-        
+            
+        if mask_app is not None:
+            geo_app = geo_app[geo_app['geometry']==mask_app]
         if mask_cidade is not None:
-            print('Cidade')
-            geo_cidade = municipios[municipios['geometry']==mask_cidade]                  
-            print(geo_cidade)
-            for geo in geo_cidade:
-                print(type(geo))
-                break
+            geo_cidade = municipios[municipios['geometry']==mask_cidade]           
         
-        mask_area_imovel = filter(area_imovel['geometry'],ponto)
+        
         if mask_area_imovel is not None:
             print('Area Imovel')
             geo_area_imovel = area_imovel[area_imovel['geometry']==mask_area_imovel]                  
-            print(geo_area_imovel['COD_IMOVEL'].values[0])
-        
-        mask_indigena = filter(terra_indigena['geometry'],ponto)
-        
+            car = geo_area_imovel['COD_IMOVEL'].values[0]
+            historico = ""
+                
         if mask_indigena is not None:
             geo_indigena = terra_indigena[terra_indigena['geometry']==mask_indigena]
-            print(geo_indigena)
-            
-            
-        mask_sigef = filter(sigef['geometry'],ponto)  
-           
+                 
         if mask_sigef:
             print('Sigef:')
             geo_sigef = sigef[sigef['geometry']==mask_sigef]                  
-            print(geo_sigef['nome_area']) 
-               
-            
-        m = folium.Map(location=[-15.5989, -56.0949 ],width=1000, height=600, zoom_start=5)
-        m.add_child(folium.LatLngPopup())
+                   
+       
+
         folium.Marker([-15.5989, -56.0949],icon=folium.Icon(color='red', icon='info-sign' ),popup="Mato Grosso Cuiabá").add_to(m)  
-        
-        if mask_floresta is not None:    
-            folium.GeoJson(data=geo_floresta,style_function=lambda x:style2).add_to(m)
-        
-        folium.Marker([latitude,longitude],icon=folium.Icon(color='red', icon='tree',prefix='fa'),popup="Dano Ambiental").add_to(m)          
-        if mask_cidade is not None:
-            folium.GeoJson(data=geo_cidade["geometry"]).add_to(m) 
-        
-        if mask_sigef is not None:
-            folium.GeoJson(data=geo_sigef["geometry"],style_function=lambda x:style1).add_to(m) 
-        
-        if mask_area_imovel is not None:
-            folium.GeoJson(data=geo_area_imovel["geometry"],style_function=lambda x:style3).add_to(m)
-        
-        if mask_indigena is not None:
-            folium.GeoJson(data=geo_indigena["geometry"],style_function=lambda x:style4).add_to(m) 
-            
         label =[]  
         cores =[]  
         
-        if mask_indigena is not None:
-            tribo = str(geo_indigena['terrai_nom'].values[0])  
-            cores.append('#FFFF00')
-            label.append("TI "+tribo)
-        
-        if mask_cidade is not None:
-            cidade = str(geo_cidade['NM_MUN'].values[0])  
-            cores.append('blue')
-            label.append("Cidade "+cidade)
-        
-        if mask_floresta is not None:   
+        if mask_floresta is not None:    
+            folium.GeoJson(data=geo_floresta,style_function=lambda x:style2).add_to(m)
             forest = str(geo_floresta['nome'].values[0])
             cores.append('green')
             label.append("Floresta: "+forest)
             cores.append('#2F4F4F')
             label.append("SireneJud: "+geo_floresta['SireneJud'].values[0])
             
+        elif geo_floresta is not None:
+            folium.GeoJson(data=geo_floresta,style_function=lambda x:style2).add_to(m)
+            forest = str(geo_floresta['nome'].values[0])
+            cores.append('green')
+            label.append("Floresta: "+forest)
+            cores.append('#2F4F4F')
+            label.append("SireneJud: "+geo_floresta['SireneJud'].values[0])
+            sirene = str(geo_floresta['SireneJud'].values[0])
+            try: 
+                datajud = get_list_or_404(DataJud,sirenejud=sirene)
+                for data in datajud:
+                    print(data.numero)
+                    print(sirene)
+                    if data.sirenejud == sirene:
+                        historico+=str(data.numero)
+                context['historico']=historico 
+            except:
+                pass
             
-        if mask_area_imovel is not None:
-            Car = str(geo_area_imovel['COD_IMOVEL'].values[0])
-            cores.append('orange')
-            label.append("Car: "+Car)
+        if mask_app is not None:    
+            folium.GeoJson(data=geo_app,style_function=lambda x:style2).add_to(m)
+            app = str(geo_app['NOM_TEMA'].values[0])
+            cores.append('#90EE90')
+            label.append("APP "+app)
+            
+        if mask_app_alto is not None:    
+            folium.GeoJson(data=geo_app_a,style_function=lambda x:style2).add_to(m)
+            app_a = str(geo_app_a['NOM_TEMA'].values[0])
+            cores.append('#90EE90')
+            label.append("APP "+app_a)
+            
+        if mask_cidade is not None:
+            folium.GeoJson(data=geo_cidade["geometry"]).add_to(m) 
+            cidade = str(geo_cidade['NM_MUN'].values[0])  
+            cores.append('blue')
+            label.append("Cidade "+cidade)
             
         if mask_sigef is not None:
+            folium.GeoJson(data=geo_sigef["geometry"],style_function=lambda x:style1).add_to(m) 
             sigef = str(geo_sigef['codigo_imo'].values[0])
             cores.append('red')
             label.append("SIGEF: "+sigef)
             
+        if mask_area_imovel is not None:
+            folium.GeoJson(data=geo_area_imovel["geometry"],style_function=lambda x:style3).add_to(m)
+            Car = str(geo_area_imovel['COD_IMOVEL'].values[0])
+            cores.append('orange')
+            label.append("Car: "+Car)
+            
+        if mask_indigena is not None:
+            folium.GeoJson(data=geo_indigena["geometry"],style_function=lambda x:style4).add_to(m) 
+            tribo = str(geo_indigena['terrai_nom'].values[0])  
+            cores.append('#FFFF00')
+            label.append("TI "+tribo)
+                  
         m = add_categorical_legend(m, 'Legenda',
                              colors = cores,
                            labels = label)
@@ -386,12 +427,53 @@ def gerarCodigoProcesso():
     for i in range(2):
         numero+=str(random.randrange(9))
     numero+=data_atual.strftime('%Y')
-    return numero+str(random.randrange(9))+"08"+"3604"
+    return numero+str(random.randrange(9))+"08"+"0029"
 
     
 def geobrain(request):
     if request.method=="POST":
-        print(request.POST)
-        print(request.FILES)
+        _numero = gerarCodigoProcesso()
+        request.session['processo'] =_numero
+        try:
+            if request.FILES['file']:
+                p = Processo.objects.create(
+                numero = _numero,
+                arquivo = request.FILES['file']
+                )
+                arquivo = request.FILES['file']
+                texto = read_pdf_to_txt(p.arquivo.url,arquivo.name)           
+                df = busca_sigef(texto=texto,numero_processo=_numero)
+                if df is not None:
+                    p.cod_sigef = df['sigef']
+                    p.sicar=df['car']
+            else:
+                p = Processo.objects.create(numero = _numero,) 
+        except:
+            p = Processo.objects.create(numero = _numero,)           
+
+        try:
+           ibge = request.POST['ibge']  
+           p.cod_municipio_ibge = ibge 
+        except:
+            pass
+        try:
+           sirene = request.POST['sirenejud']  
+           p.sirenejud = sirene 
+        except:
+            pass
+        try:
+           sigef = request.POST['sigef']  
+           p.cod_sigef = sigef
+        except:
+            pass
+        try:
+           longitude = request.POST['longitude']  
+           latitude = request.POST['latitude']  
+           p.latitude =latitude
+           p.longitude=longitude
+        except:
+            pass
         
-    return redirect('geo:dano_ambiental')
+        p.save()
+        
+    return redirect('geo:mapa')

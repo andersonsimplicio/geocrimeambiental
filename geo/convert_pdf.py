@@ -11,7 +11,7 @@ def read_pdf_to_txt(path="",nome=""):
     print(cwd+files)
     text = textract.process("{}".format(cwd+files), method='tesseract', encoding='utf-8')
     texto = text.decode('utf-8')
-
     tempoExec = time.time() - t1
     print("Tempo de execução: {} segundos".format(tempoExec/60))
+    return texto
     
