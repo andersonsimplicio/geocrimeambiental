@@ -301,22 +301,16 @@ class Mapa(TemplateView):
                 sirene = p.sirenejud
                 if sirene is not None:
                     geo_floresta = florestas[florestas['SireneJud']==sirene] 
-                    print(geo_floresta)
         else:
             sirene = p.sirenejud
             if sirene is not None:
                 geo_floresta = florestas[florestas['SireneJud']==sirene]
-                print(geo_floresta)
        
-        if mask_app is not None:   
-            print('App')          
+        if mask_app is not None:           
             geo_app =app[app['geometry']==mask_app]                            
-            print(geo_app)
-        
-        if mask_app_alto is not None:   
-            print('App_alto')          
+                    
+        if mask_app_alto is not None:            
             geo_app_a =app_alto[app_alto['geometry']==mask_app_alto]                            
-            print(geo_app_a)
         
         if mask_floresta is not None:     
             geo_floresta =florestas[florestas['geometry']==mask_floresta]                            
@@ -328,7 +322,6 @@ class Mapa(TemplateView):
         
         
         if mask_area_imovel is not None:
-            print('Area Imovel')
             geo_area_imovel = area_imovel[area_imovel['geometry']==mask_area_imovel]                  
             car = geo_area_imovel['COD_IMOVEL'].values[0]
             historico = ""
@@ -337,50 +330,52 @@ class Mapa(TemplateView):
             geo_indigena = terra_indigena[terra_indigena['geometry']==mask_indigena]
                  
         if mask_sigef:
-            print('Sigef:')
-            geo_sigef = sigef[sigef['geometry']==mask_sigef]                  
-                   
-       
+            geo_sigef = sigef[sigef['geometry']==mask_sigef]   
 
         folium.Marker([-15.5989, -56.0949],icon=folium.Icon(color='red', icon='info-sign' ),popup="Mato Grosso Cuiabá").add_to(m)  
         label =[]  
         cores =[]  
         
         if mask_floresta is not None:    
-            folium.GeoJson(data=geo_floresta,style_function=lambda x:style2).add_to(m)
+            folium.GeoJson(data=geo_floresta["geometry"],style_function=lambda x:style2).add_to(m)
             forest = str(geo_floresta['nome'].values[0])
             cores.append('green')
             label.append("Floresta: "+forest)
-            cores.append('#2F4F4F')
-            label.append("SireneJud: "+geo_floresta['SireneJud'].values[0])
+            if geo_floresta['SireneJud'].values[0] is not None:
+                cores.append('#2F4F4F')
+                label.append("SireneJud: "+str(geo_floresta['SireneJud'].values[0]))
             
         elif geo_floresta is not None:
-            folium.GeoJson(data=geo_floresta,style_function=lambda x:style2).add_to(m)
-            forest = str(geo_floresta['nome'].values[0])
-            cores.append('green')
-            label.append("Floresta: "+forest)
-            cores.append('#2F4F4F')
-            label.append("SireneJud: "+geo_floresta['SireneJud'].values[0])
-            sirene = str(geo_floresta['SireneJud'].values[0])
-            try: 
-                datajud = get_list_or_404(DataJud,sirenejud=sirene)
-                for data in datajud:
-                    print(data.numero)
-                    print(sirene)
-                    if data.sirenejud == sirene:
-                        historico+=str(data.numero)
-                context['historico']=historico 
-            except:
+            try:
+                folium.GeoJson(data=geo_floresta['geometry'],style_function=lambda x:style2).add_to(m)
+                forest = str(geo_floresta['nome'].values[0])
+                cores.append('green')
+                label.append("Floresta: "+forest)
+                cores.append('#2F4F4F')
+                if geo_floresta['SireneJud'].values[0] is not None:
+                    label.append("SireneJud: "+str(geo_floresta['SireneJud'].values[0]))
+                    sirene = str(geo_floresta['SireneJud'].values[0])
+                    try: 
+                        datajud = get_list_or_404(DataJud,sirenejud=sirene)
+                        for data in datajud:
+                            print(data.numero)
+                            print(sirene)
+                            if data.sirenejud == sirene:
+                                historico+=str(data.numero)
+                        context['historico']=historico 
+                    except:
+                        pass
+            except IndexError:
                 pass
             
         if mask_app is not None:    
-            folium.GeoJson(data=geo_app,style_function=lambda x:style2).add_to(m)
+            folium.GeoJson(data=geo_app["geometry"],style_function=lambda x:style2).add_to(m)
             app = str(geo_app['NOM_TEMA'].values[0])
             cores.append('#90EE90')
             label.append("APP "+app)
             
         if mask_app_alto is not None:    
-            folium.GeoJson(data=geo_app_a,style_function=lambda x:style2).add_to(m)
+            folium.GeoJson(data=geo_app_a["geometry"],style_function=lambda x:style2).add_to(m)
             app_a = str(geo_app_a['NOM_TEMA'].values[0])
             cores.append('#90EE90')
             label.append("APP "+app_a)

@@ -66,6 +66,10 @@ class DataJud(models.Model):
     longitude=models.CharField(max_length=50,null=True,blank=True,default=None)
     cod_sigef = models.CharField(max_length=50,null=True,blank=True,default=None)
     
+    class Meta:
+        verbose_name = 'DataJud'
+        verbose_name_plural = 'DataJud'
+        
     def __str__(self):
         return "{0} {1}".format(self.numero,self.sirenejud)
     
