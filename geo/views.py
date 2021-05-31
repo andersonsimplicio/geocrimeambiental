@@ -270,6 +270,8 @@ class Mapa(TemplateView):
         
         m = folium.Map(location=[-15.5989, -56.0949 ],width=735, height=437, zoom_start=5)
         proc =None
+        cod_sigef_pdf=""
+        sicar_pdf=""
         try:
             proc =get_object_or_404(Processo,numero=_numero)
             texto = read_pdf_to_txt(proc.arquivo.url,proc.arquivo)           
@@ -286,7 +288,7 @@ class Mapa(TemplateView):
     
         municipios = gp.read_file('data/municipios/MT_Municipios_2020.shp')   
         sigef = gp.read_file('data/sigef/Sigef_Brasil_MT.shp')
-        area_imovel = gp.read_file('data/area/AREA_IMOVEL.shp')
+        area_imovel = gp.read_file('data/area/CarSireneDiamantino.shp')
         terra_indigena = gp.read_file('data/terra_indigena/ti_sirgas.shp')
         app = gp.read_file('data/app/APP.shp')
         app_alto = gp.read_file('data/app_altoParaguai/APP.shp')
@@ -421,7 +423,7 @@ class Mapa(TemplateView):
                         i+=1  
                 except:
                     historico="Sem Registro"
-                    print('Não tem Car')
+
                 context['historico']=historico 
                 mask_area_imovel=True
             else:
@@ -447,13 +449,16 @@ class Mapa(TemplateView):
             label.append("Floresta: "+forest)
             if geo_floresta['SireneJud'].values[0] is not None:
                 cores.append('#2F4F4F')
-                label.append("SireneJud: "+str(geo_floresta['SireneJud'].values[0]))        
-                datajud = get_list_or_404(DataJud,sirenejud=sirene)
-                i=1
-                for data in datajud:                            
-                    if data.sirenejud == sirene:
-                        historico+="Processo "+str(i)+"º : "+str(data.numero)+"\n"
-                        i+=1
+                label.append("SireneJud: "+str(geo_floresta['SireneJud'].values[0])) 
+                try:       
+                    datajud = get_list_or_404(DataJud,sirenejud=sirene)
+                    i=1
+                    for data in datajud:                            
+                        if data.sirenejud == sirene:
+                            historico+="Processo "+str(i)+"º : "+str(data.numero)+"\n"
+                            i+=1
+                except:
+                    historico="Sem registro"
                 context['historico']=historico 
             
         if mask_app:     
